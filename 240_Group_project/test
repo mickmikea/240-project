@@ -3,6 +3,11 @@
 #include <vector>
 #include <ncurses.h>
 
+int moveRight(int x, int maxX);
+int moveLeft(int x, int maxX);
+int moveDown(int y, int maxY);
+int moveUp(int y, int maxY);
+
 int main()
 {
     read_write_file rw;
