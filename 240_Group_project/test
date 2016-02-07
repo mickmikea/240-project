@@ -1,1 +1,2 @@
-mvwaddch(window, y, x, text[x].at(y);
+delwin(window);
+endwin();
