@@ -1,7 +1,7 @@
 #include <iostream>
 #include "read_write_file.h"
 #include <vector>
-#include <ncurses>
+#include <ncurses.h>
 
 int main()
 {
