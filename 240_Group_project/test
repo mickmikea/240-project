@@ -1,2 +1,1 @@
-delwin(window);
-endwin();
+chtype r;
