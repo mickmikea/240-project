@@ -15,8 +15,11 @@ int main()
     start_color(); // color visible
 
     WINDOW* myWindow = NULL;
+    myWindow = newwin(10, 10, 0, 0);
 
     int height, width;
+    int x = 0;
+	int y = 0;
 
     height = getmaxy(stdscr);  //get the largest y value on the screen
     width = getmaxx(stdscr);   //get the largest x value on the screen
