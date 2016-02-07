@@ -1,0 +1,111 @@
+#include <iostream>
+#include "read_write_file.h"
+#include <vector>
+#include <ncurses>
+
+int main()
+{
+    read_write_file rw;
+    std::vector<std::string> text;
+    text = rw.read_file("test.txt");
+
+    initscr();
+
+    curs_set(0); // mouse visible
+    start_color(); // color visible
+
+    WINDOW* myWindow = NULL;
+
+    int height, width;
+
+    height = getmaxy(stdscr);  //get the largest y value on the screen
+    width = getmaxx(stdscr);   //get the largest x value on the screen
+
+        //Number of rows, number of colums, starting y, starting x
+        myWindow = newwin(height, width, 0, 0);  //create the window
+        int ch = ' ';
+
+    while (1)
+    {
+
+        height = getmaxy(stdscr);
+        width = getmaxx(stdscr);
+        for (int i =0; i < text.size(); i++)
+        {
+            for (int j =0; j < text[i].length(); j++)
+            {
+                wmove(window, j, i);
+                addch(text[i].at(j));
+            }
+        }
+        wrefresh(stdscr);
+
+        ch = wgetch(window);
+        if(ch == KEY_DOWN)
+		{
+			mvwprintw(window, 4, 1, "Down");
+			y = moveDown(y, height);
+		}
+		if(ch == KEY_UP)
+		{
+			mvwprintw(window, 4, 1, "Up");
+			y = moveUp(y, height);
+		}
+		if(ch == KEY_LEFT)
+		{
+			mvwprintw(window, 4, 1, "Left");
+			x = moveLeft(x, width);
+		}
+		if(ch == KEY_RIGHT)
+		{
+			mvwprintw(window, 4, 1, "Right");
+			x = moveRight(x, width);
+		}
+    }
+
+
+
+    rw.write_file(text, "out.txt");
+
+   return 0;
+}
+int moveRight(int x, int maxX)
+{
+	int temp = x;
+	if(temp + 1 < maxX)
+	{
+		x++;
+	}
+	return x;
+}
+
+int moveLeft(int x, int maxX)
+{
+	int temp = x;
+	if(temp - 1 >= 0)
+	{
+		x--;
+	}
+	return x;
+}
+
+int moveDown(int y, int maxY)
+{
+	int temp = y;
+	if(temp + 1 < maxY)
+	{
+		y++;
+	}
+	return y;
+}
+
+int moveUp(int y, int maxY)
+{
+	int temp = y;
+	if(temp - 1 >= 0)
+	{
+		y--;
+	}
+	return y;
+}
+
