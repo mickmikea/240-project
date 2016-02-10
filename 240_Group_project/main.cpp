@@ -81,7 +81,6 @@ int main()
 		break;
 	}
     }
-	delwin(window);
 	delwin(stdscr);
 	endwin();
 
@@ -99,7 +98,7 @@ int temp =  getmaxy(stdscr)+ start;
         {
             for (int j =0; j < text[i].length(); j++)
             {
-		addch(stdscr, text[i].at(j));
+		waddch(stdscr, text[i].at(j));
             }
 		waddch(stdscr, '\n');
         }
