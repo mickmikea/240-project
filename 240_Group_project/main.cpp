@@ -48,24 +48,24 @@ int main()
         ch = getch();
 
         if(ch == KEY_DOWN)
-	{
-		if ((getmaxy(stdscr)- y) > 3)
+	{	
+		y++;
+		move(y, x);
+		if ((y+2) > getmaxy(stdscr))
 		{ 
-			y++;
-			start_print++;
-			move(y, x);
 			wscrl(stdscr, 1);
+			start_print++;		
 		}
 	}
 	if(ch == KEY_UP)
 	{
-		if (y > 0)
-		{ 
 		y--;
-		move(y, x);
+		move(x, y);
+		if (y > 0 && start_print > 1)
+		{ 
 		wscrl(stdscr, -1);
-		}
-			
+		start_print--;
+		}	
 	}
 	if(ch == KEY_LEFT)
 	{
@@ -92,15 +92,18 @@ int main()
 
 
 int print_text (std::vector<std::string> text, int start)
-{
-int temp =  getmaxy(stdscr)+ start; 
-	for (int i = start; i < temp; i++)
+{ 
+	if (text.size() > start)
+	{
+        for (int i = start; i < text.size(); i++)
         {
-            for (int j =0; j < text[i].length(); j++)
+            for (int j =0; j < text[start].length(); j++)
             {
-		waddch(stdscr, text[i].at(j));
+		waddch(stdscr, text[start].at(j));
             }
 		waddch(stdscr, '\n');
+		start++;
         }
-return temp; //returns the line number it stop priting at
+      }
+return start; //returns the line number it stop priting at
 }
