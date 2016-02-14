@@ -21,12 +21,7 @@ void Editor::run()
 
 
         if(ch == '\r') {
-            if(y < lines.size()) {
-                lines.insert(lines.begin() + y + 1, "");
-            } else {
-                lines.push_back("");
-            }
-
+            lines.insert(lines.begin() + y + 1, "");
             y++;
             x = 0;
         } else if(ch == KEY_UP) {
@@ -50,12 +45,7 @@ void Editor::run()
                 x++;
             }
         } else {
-            if(x < line.length()) {
-                line.insert(line.begin() + x, ch);
-            } else {
-                line += (char) ch;
-            }
-
+            line.insert(line.begin() + x, ch);
             x++;
         }
 
@@ -88,7 +78,11 @@ void Editor::checkLineBounds()
 {
     std::string line = lines.at(y);
 
-    if(x > line.length() -1 && x != 0) {
-        x = line.length() - 1;
+    if(line.empty()) {
+        x = 0;
+    } else {
+        if(x > line.length()) {
+            x = line.length();
+        }
     }
 }
