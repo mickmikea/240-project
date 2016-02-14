@@ -22,6 +22,18 @@ public:
     void run();
 
 private:
+    /**
+     * @brief printLines prints all of the lines contained in the 'lines' vector to the console.
+     */
+    void printLines();
+
+    /**
+     * @brief checkLineBounds checks to be sure the cursor is within the bounds of the current line. If it's not, the cursor
+     *        will be moved to be at the end of the line.
+     */
+    void checkLineBounds();
+
+private:
     WINDOW* window;
 
     /**

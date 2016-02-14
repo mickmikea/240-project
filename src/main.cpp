@@ -4,11 +4,13 @@
 
 int main()
 {
+    // Initialize NCURSES
     initscr();
-    start_color();
+
     nonl();
     cbreak();
     curs_set(1);
+    noecho();
 
     Editor edit(stdscr);
     edit.run();
