@@ -21,7 +21,16 @@ void Editor::run()
 
 
         if(ch == '\r') {
-            lines.insert(lines.begin() + y + 1, "");
+            std::string insertion = "";
+
+            if(!line.empty()) {
+                if(x < line.length()) {
+                    insertion = line.substr(x);
+                    line = line.substr(0, x);
+                }
+            }
+
+            lines.insert(lines.begin() + y + 1, insertion);
             y++;
             x = 0;
         } else if(ch == KEY_UP) {
