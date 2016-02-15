@@ -16,9 +16,13 @@ void Editor::run()
 {
     while(true)
     {
+        int maxY = getmaxy(window);
+        int maxX = getmaxx(window);
+
+        mvprintw(maxY - 1, 0, (std::to_string(maxX) + ", " + std::to_string(maxY)).c_str());
+
         int ch = getch(); // Read the next typed character.
         std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
-
 
         if(ch == '\r') {
             std::string insertion = "";
@@ -58,9 +62,9 @@ void Editor::run()
             x++;
         }
 
+        wrefresh(window);
         printLines();
         wmove(window, y, x);
-        wrefresh(window);
     }
 }
 
