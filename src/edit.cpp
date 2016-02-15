@@ -19,12 +19,15 @@ void Editor::run()
         int maxY = getmaxy(window);
         int maxX = getmaxx(window);
 
-        mvprintw(maxY - 1, 0, (std::to_string(maxX) + ", " + std::to_string(maxY)).c_str());
-
         int ch = getch(); // Read the next typed character.
         std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
 
-        if(ch == '\r') {
+        if(ch == KEY_BACKSPACE) {
+            if(x > 0) {
+                line.erase(line.begin() + x - 1);
+                this->x--;
+            }
+        } else if(ch == '\r') {
             std::string insertion = "";
 
             if(!line.empty()) {
@@ -64,7 +67,7 @@ void Editor::run()
 
         wrefresh(window);
         printLines();
-        wmove(window, y, x);
+        wmove(window, y > maxY ? maxY - 1 : y, x);
     }
 }
 
