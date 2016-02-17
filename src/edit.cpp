@@ -1,5 +1,5 @@
 #include "edit.h"
-
+#include "undo.h"
 #include <ncurses.h>
 
 Editor::Editor(WINDOW* window)
@@ -56,12 +56,29 @@ void Editor::run()
             if(x > 0) {
                 x--;
             }
+
         } else if(ch == KEY_RIGHT) {
             if(x < line.size()) {
                 x++;
             }
-        } else {
-            line.insert(line.begin() + x, ch);
+        } else if (ch == KEY_BACKSPACE){
+	    x--; //decrement x, then that character is deleted
+	    if(x < 0){
+	    	x = 0; //if x is x < 0, it crashes
+		if(y > 0){
+		  y--;
+		  x = lines.at(y).length(); //put the cursor at the end of the next line
+		}
+	    }
+	    lines.at(y).erase(x, 1);
+
+	} else {
+            if(x < line.length()) {
+                line.insert(line.begin() + x, ch);
+            } else {
+                line += (char) ch;
+            }
+
             x++;
         }
 
@@ -73,6 +90,8 @@ void Editor::run()
 
 void Editor::printLines()
 {
+    werase(window); //clear the screen before moving to the origin, so the junk that should be deleted while backspacing gets deleted
+
     // Move to the origin
     wmove(window, 0, 0);
 
