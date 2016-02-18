@@ -62,17 +62,17 @@ void Editor::run()
                 x++;
             }
         } else if (ch == KEY_BACKSPACE){
-	    x--; //decrement x, then that character is deleted
-	    if(x < 0){
-	    	x = 0; //if x is x < 0, it crashes
-		if(y > 0){
-		  y--;
-		  x = lines.at(y).length(); //put the cursor at the end of the next line
-		}
-	    }
-	    lines.at(y).erase(x, 1);
+            x--; //decrement x, then that character is deleted
+            if(x < 0){
+                x = 0; //if x is x < 0, it crashes
+                if(y > 0){
+                    y--;
+                    x = lines.at(y).length(); //put the cursor at the end of the next line
+                }
+            }
+            lines.at(y).erase(x, 1);
 
-	} else {
+        } else {
             if(x < line.length()) {
                 line.insert(line.begin() + x, ch);
             } else {

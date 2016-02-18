@@ -5,6 +5,7 @@ SET(SOURCE_FILES
 	src/main.cpp
         src/read_write_file.cpp
         src/edit.cpp
+        src/undo.cpp
 )
 
 set(CURSES_NEED_NCURSES TRUE)
