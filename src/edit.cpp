@@ -16,17 +16,28 @@ void Editor::run()
 {
     while(true)
     {
+        int maxY = getmaxy(window);
+        int maxX = getmaxx(window);
+
         int ch = getch(); // Read the next typed character.
         std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
 
+        if(ch == KEY_BACKSPACE) {
+            if(x > 0) {
+                line.erase(line.begin() + x - 1);
+                this->x--;
+            }
+        } else if(ch == '\r') {
+            std::string insertion = "";
 
-        if(ch == '\r') {
-            if(y < lines.size()) {
-                lines.insert(lines.begin() + y + 1, "");
-            } else {
-                lines.push_back("");
+            if(!line.empty()) {
+                if(x < line.length()) {
+                    insertion = line.substr(x);
+                    line = line.substr(0, x);
+                }
             }
 
+            lines.insert(lines.begin() + y + 1, insertion);
             y++;
             x = 0;
         } else if(ch == KEY_UP) {
@@ -50,19 +61,18 @@ void Editor::run()
             if(x < line.size()) {
                 x++;
             }
-
         } else if (ch == KEY_BACKSPACE){
-	    x--; //decrement x, then that character is deleted
-	    if(x < 0){
-	    	x = 0; //if x is x < 0, it crashes
-		if(y > 0){
-		  y--;
-		  x = lines.at(y).length(); //put the cursor at the end of the next line
-		}
-	    }
-	    lines.at(y).erase(x, 1);
+            x--; //decrement x, then that character is deleted
+            if(x < 0){
+                x = 0; //if x is x < 0, it crashes
+                if(y > 0){
+                    y--;
+                    x = lines.at(y).length(); //put the cursor at the end of the next line
+                }
+            }
+            lines.at(y).erase(x, 1);
 
-	} else {
+        } else {
             if(x < line.length()) {
                 line.insert(line.begin() + x, ch);
             } else {
@@ -72,9 +82,9 @@ void Editor::run()
             x++;
         }
 
-        printLines();
-        wmove(window, y, x);
         wrefresh(window);
+        printLines();
+        wmove(window, y > maxY ? maxY - 1 : y, x);
     }
 }
 
@@ -103,7 +113,11 @@ void Editor::checkLineBounds()
 {
     std::string line = lines.at(y);
 
-    if(x > line.length() -1 && x != 0) {
-        x = line.length() - 1;
+    if(line.empty()) {
+        x = 0;
+    } else {
+        if(x > line.length()) {
+            x = line.length();
+        }
     }
 }

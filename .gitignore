@@ -1,4 +1,5 @@
 /bin
+*.autosave
 
 # Compiled Object files
 *.slo
