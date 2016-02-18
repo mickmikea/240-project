@@ -1,5 +1,5 @@
 #include "edit.h"
-
+#include "undo.h"
 #include <ncurses.h>
 
 Editor::Editor(WINDOW* window)
