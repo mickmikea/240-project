@@ -22,11 +22,17 @@ void Editor::run()
         int ch = getch(); // Read the next typed character.
         std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
 
-        if(ch == KEY_BACKSPACE) {
-            if(x > 0) {
-                line.erase(line.begin() + x - 1);
-                this->x--;
+		if (ch == KEY_BACKSPACE) {
+            x--; //decrement x, then that character is deleted
+            if(x < 0) {
+                x = 0; //if x is x < 0, it crashes
+                if(y > 0) {
+                    y--;
+                    x = lines.at(y).length(); //put the cursor at the end of the next line
+                }
             }
+            lines.at(y).erase(x, 1);
+
         } else if(ch == '\r') {
             std::string insertion = "";
 
@@ -61,17 +67,6 @@ void Editor::run()
             if(x < line.size()) {
                 x++;
             }
-        } else if (ch == KEY_BACKSPACE){
-            x--; //decrement x, then that character is deleted
-            if(x < 0){
-                x = 0; //if x is x < 0, it crashes
-                if(y > 0){
-                    y--;
-                    x = lines.at(y).length(); //put the cursor at the end of the next line
-                }
-            }
-            lines.at(y).erase(x, 1);
-
         } else {
             if(x < line.length()) {
                 line.insert(line.begin() + x, ch);
@@ -82,9 +77,9 @@ void Editor::run()
             x++;
         }
 
-        wrefresh(window);
         printLines();
         wmove(window, y > maxY ? maxY - 1 : y, x);
+        wrefresh(window);
     }
 }
 
