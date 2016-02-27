@@ -1,73 +1,41 @@
 #include "edit.h"
+#include "read_write_file.h"
 #include "undo.h"
+
 #include <ncurses.h>
+#include <functional>
+#include <cstdio>
 
 Editor::Editor(WINDOW* window)
-    : window{window}, x{0}, y{0}
+    : window{window}, x{0}, y{0}, lineStart{0}, localY{0}, fileName{"Untitled"}
 {
-    scrollok(stdscr, true);
-    keypad(stdscr, true);
+    keypad(window, true);
 
-    // This is the default line, because there's ALWAYS at least one line.
-    lines.push_back("");
+    setupKeybindings();
 }
 
 void Editor::run()
 {
+    if(lines.empty()) {
+        // This is the default line, because there's ALWAYS at least one line.
+        lines.push_back("");
+    }
+
     while(true)
     {
-        int maxY = getmaxy(window);
-        int maxX = getmaxx(window);
-
         int ch = getch(); // Read the next typed character.
         std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
 
-		if (ch == KEY_BACKSPACE) {
-            x--; //decrement x, then that character is deleted
-            if(x < 0) {
-                x = 0; //if x is x < 0, it crashes
-                if(y > 0) {
-                    y--;
-                    x = lines.at(y).length(); //put the cursor at the end of the next line
-                }
-            }
-            lines.at(y).erase(x, 1);
+        bool handled = false;
 
-        } else if(ch == '\r') {
-            std::string insertion = "";
-
-            if(!line.empty()) {
-                if(x < line.length()) {
-                    insertion = line.substr(x);
-                    line = line.substr(0, x);
-                }
+        for(auto keybind : keybindings) {
+            if(keybind.pressedKey == ch) {
+                keybind.callback(line, ch);
+                handled = true;
             }
+        }
 
-            lines.insert(lines.begin() + y + 1, insertion);
-            y++;
-            x = 0;
-        } else if(ch == KEY_UP) {
-            if(y > 0) {
-                y--;
-            }
-
-            checkLineBounds();
-        } else if(ch == KEY_DOWN) {
-            if(y < lines.size() - 1) {
-                y++;
-            }
-
-            checkLineBounds();
-        } else if(ch == KEY_LEFT) {
-            if(x > 0) {
-                x--;
-            }
-
-        } else if(ch == KEY_RIGHT) {
-            if(x < line.size()) {
-                x++;
-            }
-        } else {
+        if(!handled) {
             if(x < line.length()) {
                 line.insert(line.begin() + x, ch);
             } else {
@@ -78,9 +46,25 @@ void Editor::run()
         }
 
         printLines();
-        wmove(window, y > maxY ? maxY - 1 : y, x);
+        drawStatusBar();
+        wmove(window, localY, x);
         wrefresh(window);
     }
+}
+
+void Editor::loadFile(const std::string &fileName)
+{
+    this->fileName = fileName;
+
+    auto lines = read_write_file::read_file(fileName);
+
+    for(auto line : lines) {
+        this->lines.push_back(line);
+    }
+
+    printLines();
+    wmove(window, 0, 0);
+    wrefresh(window);
 }
 
 void Editor::printLines()
@@ -91,17 +75,28 @@ void Editor::printLines()
     wmove(window, 0, 0);
 
     // Write the lines out
-    for(int i = 0; i < lines.size(); i++) {
+    for(int i = lineStart; i < lines.size(); i++) {
         std::string line = lines.at(i);
 
-        for(auto c : line) {
-            waddch(window, c);
-        }
+        waddstr(window, line.c_str());
 
         if(i < lines.size() - 1) {
             waddch(window, '\n');
         }
     }
+}
+
+void Editor::drawStatusBar()
+{
+    int maxX = getmaxx(window);
+    int maxY = getmaxy(window);
+
+    for(int i = 0; i < maxX; i++) {
+        mvwaddch(window, maxY - 1, i, ' '); // Erase the bottom line
+    }
+
+    mvwprintw(window, maxY - 1, 0, fileName.c_str());
+    mvwprintw(window, maxY - 1, maxX - 10, "%d, %d", x, y);
 }
 
 void Editor::checkLineBounds()
@@ -114,5 +109,104 @@ void Editor::checkLineBounds()
         if(x > line.length()) {
             x = line.length();
         }
+    }
+}
+
+void Editor::backspace(std::string& line, char keyPressed)
+{
+    x--; //decrement x, then that character is deleted
+    if(x < 0) {
+        x = 0; //if x is x < 0, it crashes
+        if(y > 0) {
+            y--;
+            x = lines.at(y).length(); //put the cursor at the end of the next line
+        }
+    }
+    lines.at(y).erase(x, 1);
+}
+
+void Editor::newLine(std::string& line, char keyPressed)
+{
+    int maxY = getmaxy(window);
+
+    std::string insertion = "";
+
+    if(!line.empty()) {
+        if(x < line.length()) {
+            insertion = line.substr(x);
+            line = line.substr(0, x);
+        }
+    }
+
+    lines.insert(lines.begin() + y + 1, insertion);
+    y++;
+    x = 0;
+
+    if(localY < maxY - 2) {
+        localY++;
+    } else {
+        lineStart++;
+    }
+}
+
+void Editor::keyUp(std::string& line, char keyPressed)
+{
+    if(y > 0) {
+        if(localY == 0) {
+            lineStart--;
+        } else {
+            localY--;
+        }
+
+        y--;
+    }
+
+    checkLineBounds();
+}
+
+void Editor::keyDown(std::string& line, char keyPressed)
+{
+    int maxy = getmaxy(window);
+
+    if(y < lines.size() - 1) {
+        if(localY < maxy - 2) {
+            localY++;
+        } else {
+            lineStart++;
+        }
+
+        y++;
+    }
+
+    checkLineBounds();
+}
+
+void Editor::keyLeft(std::string& line, char keyPressed)
+{
+    if(x > 0) {
+        x--;
+    }
+}
+
+void Editor::keyRight(std::string& line, char keyPressed)
+{
+    if(x < line.size()) {
+        x++;
+    }
+}
+
+void Editor::setupKeybindings()
+{
+    std::vector<Keybind> defaultKeybindings {
+        { KEY_BACKSPACE, std::bind(&Editor::backspace, this, std::placeholders::_1, std::placeholders::_2) }, // Backspace keybind
+        { '\r', std::bind(&Editor::newLine, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_UP, std::bind(&Editor::keyUp, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_DOWN, std::bind(&Editor::keyDown, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_LEFT, std::bind(&Editor::keyLeft, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_RIGHT, std::bind(&Editor::keyRight, this, std::placeholders::_1, std::placeholders::_2) },
+    };
+
+    for(auto keybind : defaultKeybindings) {
+        keybindings.push_back(keybind);
     }
 }
