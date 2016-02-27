@@ -5,7 +5,7 @@
 #include <cstdio>
 
 Editor::Editor(WINDOW* window)
-    : window{window}, x{0}, y{0}, lineStart{0}, localY{0}
+    : window{window}, x{0}, y{0}, lineStart{0}, localY{0}, fileName{"Untitled"}
 {
     keypad(window, true);
 
@@ -42,6 +42,7 @@ void Editor::run()
         }
 
         printLines();
+        drawStatusBar();
         mvwprintw(window, 1, 5, "Local: %d, Global: %d", localY, y);
         wmove(window, localY, x);
         wrefresh(window);
@@ -59,14 +60,25 @@ void Editor::printLines()
     for(int i = lineStart; i < lines.size(); i++) {
         std::string line = lines.at(i);
 
-        for(auto c : line) {
-            waddch(window, c);
-        }
+        waddstr(window, line.c_str());
 
         if(i < lines.size() - 1) {
             waddch(window, '\n');
         }
     }
+}
+
+void Editor::drawStatusBar()
+{
+    int maxX = getmaxx(window);
+    int maxY = getmaxy(window);
+
+    for(int i = 0; i < maxX; i++) {
+        mvwaddch(window, maxY - 1, i, ' '); // Erase the bottom line
+    }
+
+    mvwprintw(window, maxY - 1, 0, fileName.c_str());
+    mvwprintw(window, maxY - 1, maxX - 10, "%d, %d", x, y);
 }
 
 void Editor::checkLineBounds()
@@ -112,7 +124,7 @@ void Editor::newLine(std::string& line, char keyPressed)
     y++;
     x = 0;
 
-    if(localY < maxY - 1) {
+    if(localY < maxY - 2) {
         localY++;
     } else {
         lineStart++;
@@ -139,7 +151,7 @@ void Editor::keyDown(std::string& line, char keyPressed)
     int maxy = getmaxy(window);
 
     if(y < lines.size() - 1) {
-        if(localY < maxy-1) {
+        if(localY < maxy - 2) {
             localY++;
         } else {
             lineStart++;

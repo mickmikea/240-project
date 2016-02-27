@@ -30,6 +30,11 @@ private:
     void printLines();
 
     /**
+     * @brief drawStatusBar draw the status bar on the bottom of the terminal
+     */
+    void drawStatusBar();
+
+    /**
      * @brief checkLineBounds checks to be sure the cursor is within the bounds of the current line. If it's not, the cursor
      *        will be moved to be at the end of the line.
      */
@@ -68,6 +73,9 @@ private:
      */
     int y;
 
+    /**
+     * @brief lineStart the line index to start printing from the lines vector
+     */
     int lineStart;
 
     /**
@@ -83,6 +91,11 @@ private:
      * @brief keybindings holds all of the keybindings defined for the text editor.
      */
     std::vector<Keybind> keybindings;
+
+    /**
+     * @brief fileName the name of the file being editted.
+     */
+    std::string fileName;
 };
 
 #endif // EDIT_H
