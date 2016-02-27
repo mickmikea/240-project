@@ -1,5 +1,6 @@
 /bin
 *.autosave
+CMakeLists.txt.user
 
 # Compiled Object files
 *.slo

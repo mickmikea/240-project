@@ -6,6 +6,7 @@ SET(SOURCE_FILES
         src/read_write_file.cpp
         src/edit.cpp
         src/undo.cpp
+        src/keybind.cpp
 )
 
 set(CURSES_NEED_NCURSES TRUE)

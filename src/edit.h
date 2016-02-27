@@ -1,6 +1,8 @@
 #ifndef EDIT_H
 #define EDIT_H
 
+#include "keybind.h"
+
 #include <ncurses.h>
 #include <string>
 #include <vector>
@@ -33,6 +35,21 @@ private:
      */
     void checkLineBounds();
 
+    /**
+     * @brief setupKeybindings set up the default keybindings for the editor.
+     */
+    void setupKeybindings();
+
+    /**
+     * @brief backspace the callback for when backspace is pressed.
+     * @param pressedKey the key pressed
+     */
+    void backspace(std::string& line, char pressedKey);
+    void newLine(std::string& line, char pressedKey);
+    void keyUp(std::string& line, char pressedKey);
+    void keyDown(std::string& line, char pressedKey);
+    void keyLeft(std::string& line, char pressedKey);
+    void keyRight(std::string& line, char pressedKey);
 private:
     WINDOW* window;
 
@@ -54,6 +71,11 @@ private:
      * bad tearing later on, it can be changed, but for now it seemed like a good idea.
      */
     std::vector<std::string> lines;
+
+    /**
+     * @brief keybindings holds all of the keybindings defined for the text editor.
+     */
+    std::vector<Keybind> keybindings;
 };
 
 #endif // EDIT_H
