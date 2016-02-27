@@ -2,6 +2,7 @@
 #define EDIT_H
 
 #include "keybind.h"
+#include "read_write_file.h"
 
 #include <ncurses.h>
 #include <string>
@@ -22,6 +23,8 @@ public:
      * @brief Editor::run the main editor loop that handles all key events for the editor
      */
     void run();
+
+    void loadFile(const std::string& file);
 
 private:
     /**

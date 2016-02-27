@@ -4,8 +4,6 @@
 #include <sstream>
 #include <vector>
 
-read_write_file::read_write_file(){}
-
 // takes a file name returns a vector of the file info
 std::vector<std::string> read_write_file::read_file(std::string name)
 {

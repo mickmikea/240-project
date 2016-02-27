@@ -1,5 +1,7 @@
 #include "edit.h"
+#include "read_write_file.h"
 #include "undo.h"
+
 #include <ncurses.h>
 #include <functional>
 #include <cstdio>
@@ -9,14 +11,16 @@ Editor::Editor(WINDOW* window)
 {
     keypad(window, true);
 
-    // This is the default line, because there's ALWAYS at least one line.
-    lines.push_back("");
-
     setupKeybindings();
 }
 
 void Editor::run()
 {
+    if(lines.empty()) {
+        // This is the default line, because there's ALWAYS at least one line.
+        lines.push_back("");
+    }
+
     while(true)
     {
         int ch = getch(); // Read the next typed character.
@@ -43,10 +47,24 @@ void Editor::run()
 
         printLines();
         drawStatusBar();
-        mvwprintw(window, 1, 5, "Local: %d, Global: %d", localY, y);
         wmove(window, localY, x);
         wrefresh(window);
     }
+}
+
+void Editor::loadFile(const std::string &fileName)
+{
+    this->fileName = fileName;
+
+    auto lines = read_write_file::read_file(fileName);
+
+    for(auto line : lines) {
+        this->lines.push_back(line);
+    }
+
+    printLines();
+    wmove(window, 0, 0);
+    wrefresh(window);
 }
 
 void Editor::printLines()
