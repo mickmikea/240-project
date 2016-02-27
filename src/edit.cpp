@@ -5,10 +5,9 @@
 #include <cstdio>
 
 Editor::Editor(WINDOW* window)
-    : window{window}, x{0}, y{0}
+    : window{window}, x{0}, y{0}, lineStart{0}, localY{0}
 {
-    scrollok(stdscr, true);
-    keypad(stdscr, true);
+    keypad(window, true);
 
     // This is the default line, because there's ALWAYS at least one line.
     lines.push_back("");
@@ -20,9 +19,6 @@ void Editor::run()
 {
     while(true)
     {
-        int maxY = getmaxy(window);
-        int maxX = getmaxx(window);
-
         int ch = getch(); // Read the next typed character.
         std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
 
@@ -46,7 +42,8 @@ void Editor::run()
         }
 
         printLines();
-        wmove(window, y > maxY ? maxY - 1 : y, x);
+        mvwprintw(window, 1, 5, "Local: %d, Global: %d", localY, y);
+        wmove(window, localY, x);
         wrefresh(window);
     }
 }
@@ -59,7 +56,7 @@ void Editor::printLines()
     wmove(window, 0, 0);
 
     // Write the lines out
-    for(int i = 0; i < lines.size(); i++) {
+    for(int i = lineStart; i < lines.size(); i++) {
         std::string line = lines.at(i);
 
         for(auto c : line) {
@@ -100,6 +97,8 @@ void Editor::backspace(std::string& line, char keyPressed)
 
 void Editor::newLine(std::string& line, char keyPressed)
 {
+    int maxY = getmaxy(window);
+
     std::string insertion = "";
 
     if(!line.empty()) {
@@ -112,11 +111,23 @@ void Editor::newLine(std::string& line, char keyPressed)
     lines.insert(lines.begin() + y + 1, insertion);
     y++;
     x = 0;
+
+    if(localY < maxY - 1) {
+        localY++;
+    } else {
+        lineStart++;
+    }
 }
 
 void Editor::keyUp(std::string& line, char keyPressed)
 {
     if(y > 0) {
+        if(localY == 0) {
+            lineStart--;
+        } else {
+            localY--;
+        }
+
         y--;
     }
 
@@ -125,7 +136,15 @@ void Editor::keyUp(std::string& line, char keyPressed)
 
 void Editor::keyDown(std::string& line, char keyPressed)
 {
+    int maxy = getmaxy(window);
+
     if(y < lines.size() - 1) {
+        if(localY < maxy-1) {
+            localY++;
+        } else {
+            lineStart++;
+        }
+
         y++;
     }
 

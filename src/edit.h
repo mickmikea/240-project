@@ -54,6 +54,11 @@ private:
     WINDOW* window;
 
     /**
+     * @brief localY the y coordinate in the terminal
+     */
+    int localY;
+
+    /**
      * @brief x the x character of the next character
      */
     int x;
@@ -62,6 +67,8 @@ private:
      * @brief y the y character of the next character
      */
     int y;
+
+    int lineStart;
 
     /**
      * @brief lines holds all of the text this editor contains.
