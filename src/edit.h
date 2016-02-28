@@ -2,7 +2,6 @@
 #define EDIT_H
 
 #include "keybind.h"
-#include "read_write_file.h"
 
 #include <ncurses.h>
 #include <string>
