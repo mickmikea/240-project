@@ -24,8 +24,6 @@ public:
      */
     void run();
 
-    void loadFile(const std::string& file);
-
 private:
     /**
      * @brief printLines prints all of the lines contained in the 'lines' vector to the console.
@@ -58,6 +56,8 @@ private:
     void keyDown(std::string& line, char pressedKey);
     void keyLeft(std::string& line, char pressedKey);
     void keyRight(std::string& line, char pressedKey);
+    void saveFile(std::string& line, char pressedKey);
+    void loadFile(std::string& file, char keyPressed);
 private:
     WINDOW* window;
 

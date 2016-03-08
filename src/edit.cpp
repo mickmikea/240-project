@@ -52,20 +52,7 @@ void Editor::run()
     }
 }
 
-void Editor::loadFile(const std::string &fileName)
-{
-    this->fileName = fileName;
 
-    auto lines = read_write_file::read_file(fileName);
-
-    for(auto line : lines) {
-        this->lines.push_back(line);
-    }
-
-    printLines();
-    wmove(window, 0, 0);
-    wrefresh(window);
-}
 
 void Editor::printLines()
 {
@@ -115,10 +102,21 @@ void Editor::checkLineBounds()
 void Editor::backspace(std::string& line, char keyPressed)
 {
     x--; //decrement x, then that character is deleted
-    if(x < 0) {
+    if(x < 0) 
+    {
         x = 0; //if x is x < 0, it crashes
-        if(y > 0) {
+        if(y > 0) 
+        {
+	    lines.erase(lines.begin()+y);
             y--;
+	    if(localY==0)
+	    {
+	        lineStart--;
+	    }
+	    else
+	    {
+	        localY--;
+	    }
             x = lines.at(y).length(); //put the cursor at the end of the next line
         }
     }
@@ -195,6 +193,173 @@ void Editor::keyRight(std::string& line, char keyPressed)
     }
 }
 
+void Editor::saveFile(std::string& line, char keyPressed) // save file
+{
+    int startX = x;
+    int startY = y;
+    int startLocalY = localY;
+    int startLineStart = lineStart;
+    int startLength = lines.size();
+
+    y = 0;
+    x = 0;
+
+    newLine(lines.at(0), 0);
+    lines.at(0) = "Enter a save filename: ";
+    x = lines.at(0).length();
+    int filenameStart = x;
+    
+    y = 0;
+    localY = 0;
+    lineStart = 0;
+
+    printLines();
+    drawStatusBar();
+    wmove(window, localY, x);
+    wrefresh(window);
+
+    while(true)
+    {
+	int ch = getch(); // Read the next typed character.
+        std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
+
+        bool handled = false;
+
+        for(auto keybind : keybindings) {
+            if(keybind.pressedKey == ch) {
+                keybind.callback(line, ch);
+                handled = true;
+            }
+        }
+
+        if(!handled) {
+	    if(x >= COLS - 1)
+	    {
+		break;
+	    }
+
+            if(x < line.length()) {
+                line.insert(line.begin() + x, ch);
+            } else {
+                line += (char) ch;
+            }
+
+            x++;
+        }
+
+	//if we're past the top line, go with what we've got
+	if(y != 0)
+	{
+	    break;
+	}
+
+        printLines();
+        drawStatusBar();
+        wmove(window, localY, x);
+        wrefresh(window);
+    }
+
+    //Get rid of any extra lines
+    std::string filename = lines.at(0).substr(filenameStart);
+    lines.erase(lines.begin());
+
+    if(lines.size() > startLength)
+    {
+	lines.erase(lines.begin());
+    }
+
+    read_write_file::write_file(lines, filename);
+
+    fileName = filename;
+
+    //Restore location variables to their previous values
+    x = startX;
+    y = startY;
+    localY = startLocalY;
+    lineStart = startLineStart;
+
+    printLines();
+    drawStatusBar();
+    wmove(window, localY, x);
+    wrefresh(window);
+}
+
+
+void Editor::loadFile(std::string &fileName, char keyPressed) // load file
+{
+    y = 0;
+    x = 0;
+    newLine(lines.at(0), 0);
+    lines.at(0) = "Enter a load filename: ";
+    x = lines.at(0).length();
+    int filenameStart = x;
+    
+    y = 0;
+    localY = 0;
+    lineStart = 0;
+
+    printLines();
+    drawStatusBar();
+    wmove(window, localY, x);
+    wrefresh(window);
+
+    while(true)
+    {
+	int ch = getch(); // Read the next typed character.
+        std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
+
+        bool handled = false;
+
+        for(auto keybind : keybindings) {
+            if(keybind.pressedKey == ch) {
+                keybind.callback(line, ch);
+                handled = true;
+            }
+        }
+
+        if(!handled) {
+	    if(x >= COLS - 1)
+	    {
+		break;
+	    }
+
+            if(x < line.length()) {
+                line.insert(line.begin() + x, ch);
+            } else {
+                line += (char) ch;
+            }
+
+            x++;
+        }
+
+	//if we're past the top line, go with what we've got
+	if(y != 0)
+	{
+	    break;
+	}
+
+        printLines();
+        drawStatusBar();
+        wmove(window, localY, x);
+        wrefresh(window);
+    }
+
+    std::string filename = lines.at(0).substr(filenameStart);
+    fileName = filename;
+    
+    lines.clear();
+    lines = read_write_file::read_file(filename);
+
+    y = 0;
+    localY = 0;
+    lineStart = 0;
+
+    printLines();
+    drawStatusBar();
+    wmove(window, localY, x);
+    wrefresh(window);
+}
+
 void Editor::setupKeybindings()
 {
     std::vector<Keybind> defaultKeybindings {
@@ -204,6 +369,8 @@ void Editor::setupKeybindings()
         { KEY_DOWN, std::bind(&Editor::keyDown, this, std::placeholders::_1, std::placeholders::_2) },
         { KEY_LEFT, std::bind(&Editor::keyLeft, this, std::placeholders::_1, std::placeholders::_2) },
         { KEY_RIGHT, std::bind(&Editor::keyRight, this, std::placeholders::_1, std::placeholders::_2) },
+	{ KEY_F(5), std::bind(&Editor::saveFile, this, std::placeholders::_1, std::placeholders::_2) }, // save file keybind
+        { KEY_F(6), std::bind(&Editor::loadFile, this, std::placeholders::_1, std::placeholders::_2) },
     };
 
     for(auto keybind : defaultKeybindings) {
