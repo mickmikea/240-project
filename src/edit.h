@@ -23,8 +23,6 @@ public:
      */
     void run();
 
-    void loadFile(const std::string& file);
-
 private:
     /**
      * @brief printLines prints all of the lines contained in the 'lines' vector to the console.
@@ -46,7 +44,14 @@ private:
      * @brief setupKeybindings set up the default keybindings for the editor.
      */
     void setupKeybindings();
-
+    /**
+     * @brief writeKeyWordLide writes a line to screen while highlighting keywords
+     */
+    void writeKeyWordLine(int, std::string);
+    /**
+     * @brief numMatchedBrackets returns the number of matched brakcets
+     */
+    int brackets();
     /**
      * @brief backspace the callback for when backspace is pressed.
      * @param pressedKey the key pressed
@@ -57,6 +62,8 @@ private:
     void keyDown(std::string& line, char pressedKey);
     void keyLeft(std::string& line, char pressedKey);
     void keyRight(std::string& line, char pressedKey);
+    void saveFile(std::string& line, char pressedKey);
+    void loadFile(std::string& file, char keyPressed);
 private:
     WINDOW* window;
 
