@@ -58,6 +58,8 @@ private:
     void keyRight(std::string& line, char pressedKey);
     void saveFile(std::string& line, char pressedKey);
     void loadFile(std::string& file, char keyPressed);
+
+    void wordWrap();
 private:
     WINDOW* window;
 

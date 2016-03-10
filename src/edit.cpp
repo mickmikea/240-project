@@ -45,14 +45,15 @@ void Editor::run()
             x++;
         }
 
+	
+
+	wordWrap();
         printLines();
         drawStatusBar();
         wmove(window, localY, x);
         wrefresh(window);
     }
 }
-
-
 
 void Editor::printLines()
 {
@@ -104,10 +105,13 @@ void Editor::backspace(std::string& line, char keyPressed)
     x--; //decrement x, then that character is deleted
     if(x < 0) 
     {
-        x = 0; //if x is x < 0, it crashes
+	x = 0;
         if(y > 0) 
         {
-	    lines.erase(lines.begin()+y);
+	    if(lines.at(y).length() == 0)
+	    {
+	        lines.erase(lines.begin()+y);
+	    }
             y--;
 	    if(localY==0)
 	    {
@@ -117,7 +121,7 @@ void Editor::backspace(std::string& line, char keyPressed)
 	    {
 	        localY--;
 	    }
-            x = lines.at(y).length(); //put the cursor at the end of the next line
+            x = lines.at(y).length() - 1; //put the cursor at the end of the next line
         }
     }
     lines.at(y).erase(x, 1);
@@ -158,6 +162,12 @@ void Editor::keyUp(std::string& line, char keyPressed)
 
         y--;
     }
+    else
+    {
+	y = 0;
+	localY = 0;
+	lineStart = 0;
+    }
 
     checkLineBounds();
 }
@@ -184,12 +194,22 @@ void Editor::keyLeft(std::string& line, char keyPressed)
     if(x > 0) {
         x--;
     }
+    else
+    {
+	keyUp(line, keyPressed);
+	x = lines.at(y).size() - 1;
+    }
 }
 
 void Editor::keyRight(std::string& line, char keyPressed)
 {
     if(x < line.size()) {
         x++;
+    }
+    else
+    {
+	keyDown(line, keyPressed);
+	x = 0;
     }
 }
 
@@ -354,10 +374,97 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
     localY = 0;
     lineStart = 0;
 
+    wordWrap();
     printLines();
     drawStatusBar();
     wmove(window, localY, x);
     wrefresh(window);
+}
+
+
+int findLastSpace(std::string str) // finds the last white space for word wrap
+{
+    for(int i = str.length() - 2; i >= 0; i--)
+    {
+	if(str[i] == ' ' )
+	{
+	    return i;
+	}
+    }
+
+    return -1;
+}
+
+void Editor::wordWrap() // wraps the text to the next line if it is longer than the max line length
+{
+    bool wrapped = false;
+    for(int i = y; i < lines.size(); i++)
+    {
+	if(lines.at(i).length() >= COLS)
+	{
+	    int lastSpace = findLastSpace(lines.at(i));
+	    if(lastSpace >= 0)
+	    {
+		wrapped = true;
+		if(lastSpace < lines.at(i).length() - 1)
+		{
+		    std::string wrapString = lines.at(i).substr(lastSpace+1);
+		    lines[i].erase(lastSpace+1);
+
+		    if(i == lines.size() - 1)
+		    {
+			lines.push_back(wrapString);
+		    }
+		    else
+		    {
+			if(lines.at(i+1).empty())
+			{
+			    lines[i+1] = wrapString;
+			}
+			else
+			{
+			    lines[i+1].insert(0, wrapString);
+			}
+		    }
+		    x = wrapString.length();
+		}
+		else
+		{
+		    if(i == lines.size() - 1)
+		    {
+			lines.push_back("");
+		    }
+		    else
+		    {
+			if(lines.at(i+1).empty())
+			{
+			    lines[i+1] = "";
+			}
+		    }
+		    x = 0;
+		}
+	    }
+	} 
+    }
+
+    if(wrapped)
+    {
+	int maxy = getmaxy(window);
+
+        if(y < lines.size() - 1) 
+	{
+	    if(localY < maxy - 2) 
+	    {
+	        localY++;
+	    } 
+	    else 
+	    {
+	        lineStart++;
+	    }
+
+	    y++;
+        }
+    }
 }
 
 void Editor::setupKeybindings()
