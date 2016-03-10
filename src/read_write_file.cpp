@@ -1,25 +1,25 @@
 #include "read_write_file.h"
+#include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <fstream>
 #include <sstream>
 #include <vector>
 
 // takes a file name returns a vector of the file info
-std::vector<std::string> read_write_file::read_file(std::string name)
+std::vector<std::string> read_write_file::read_file(const std::string& name)
 {
     std::ifstream infile(name.c_str());
     std::vector<std::string> text;
-    while (infile)
-    {
-        int x =0;
-        std::string Str;
-        while (getline(infile, Str))
-        {
-            text.insert(text.begin()+x, Str);
-            x++;
-        }
+
+    if(!infile.good()) {
+        return text;
     }
-    infile.close();
+
+    std::copy(std::istream_iterator<std::string>(infile),
+              std::istream_iterator<std::string>(),
+              std::back_inserter(text));
+
     return text;
 }
 

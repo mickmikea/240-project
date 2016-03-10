@@ -2,7 +2,6 @@
 #define EDIT_H
 
 #include "keybind.h"
-#include "read_write_file.h"
 
 #include <ncurses.h>
 #include <string>
@@ -58,10 +57,16 @@ private:
     void keyRight(std::string& line, char pressedKey);
     void saveFile(std::string& line, char pressedKey);
     void loadFile(std::string& file, char keyPressed);
+    void exit(std::string& line, char pressedKey);
 
     void wordWrap();
 private:
     WINDOW* window;
+
+    /**
+     * @brief running whether or not the editor is running
+     */
+    bool running;
 
     /**
      * @brief localY the y coordinate in the terminal

@@ -7,7 +7,7 @@
 #include <cstdio>
 
 Editor::Editor(WINDOW* window)
-    : window{window}, x{0}, y{0}, lineStart{0}, localY{0}, fileName{"Untitled"}
+    : window{window}, x{0}, y{0}, lineStart{0}, localY{0}, fileName{"Untitled"}, running{true}
 {
     keypad(window, true);
 
@@ -21,7 +21,7 @@ void Editor::run()
         lines.push_back("");
     }
 
-    while(true)
+    while(running)
     {
         int ch = getch(); // Read the next typed character.
         std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
@@ -307,9 +307,8 @@ void Editor::saveFile(std::string& line, char keyPressed) // save file
 
 void Editor::loadFile(std::string &fileName, char keyPressed) // load file
 {
-    y = 0;
-    x = 0;
-    newLine(lines.at(0), 0);
+    werase(window); //erases window before prompt
+
     lines.at(0) = "Enter a load filename: ";
     x = lines.at(0).length();
     int filenameStart = x;
@@ -323,10 +322,9 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
     wmove(window, localY, x);
     wrefresh(window);
 
-    while(true)
-    {
-	int ch = getch(); // Read the next typed character.
-        std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
+    while(running) {
+        int ch = getch(); // Read the next typed character.
+        std::string& line = lines.at(0); // Get the string that holds the information about the line we're on
 
         bool handled = false;
 
@@ -338,10 +336,9 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
         }
 
         if(!handled) {
-	    if(x >= COLS - 1)
-	    {
-		break;
-	    }
+            if(x >= COLS - 1) {
+               break;
+            }
 
             if(x < line.length()) {
                 line.insert(line.begin() + x, ch);
@@ -352,11 +349,11 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
             x++;
         }
 
-	//if we're past the top line, go with what we've got
-	if(y != 0)
-	{
-	    break;
-	}
+        //if we're past the top line, go with what we've got
+        if(y != 0)
+        {
+            break;
+        }
 
         printLines();
         drawStatusBar();
@@ -370,6 +367,11 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
     lines.clear();
     lines = read_write_file::read_file(filename);
 
+    if(lines.empty()) {
+        lines.push_back("");
+    }
+
+    x = 0;
     y = 0;
     localY = 0;
     lineStart = 0;
@@ -378,9 +380,33 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
     printLines();
     drawStatusBar();
     wmove(window, localY, x);
+    mvprintw(2, 2, "%s", filename.c_str());
     wrefresh(window);
 }
 
+void Editor::exit(std::string& line, char keyPressed)
+{
+    running = false;
+}
+
+void Editor::setupKeybindings()
+{
+    std::vector<Keybind> defaultKeybindings {
+        { KEY_BACKSPACE, std::bind(&Editor::backspace, this, std::placeholders::_1, std::placeholders::_2) }, // Backspace keybind
+        { '\r', std::bind(&Editor::newLine, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_UP, std::bind(&Editor::keyUp, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_DOWN, std::bind(&Editor::keyDown, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_LEFT, std::bind(&Editor::keyLeft, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_RIGHT, std::bind(&Editor::keyRight, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_F(5), std::bind(&Editor::saveFile, this, std::placeholders::_1, std::placeholders::_2) }, // save file keybind
+        { KEY_F(6), std::bind(&Editor::loadFile, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_F(10), std::bind(&Editor::exit, this, std::placeholders::_1, std::placeholders::_2) },
+    };
+
+    for(auto keybind : defaultKeybindings) {
+        keybindings.push_back(keybind);
+    }
+}
 
 int findLastSpace(std::string str) // finds the last white space for word wrap
 {
@@ -464,23 +490,5 @@ void Editor::wordWrap() // wraps the text to the next line if it is longer than 
 
 	    y++;
         }
-    }
-}
-
-void Editor::setupKeybindings()
-{
-    std::vector<Keybind> defaultKeybindings {
-        { KEY_BACKSPACE, std::bind(&Editor::backspace, this, std::placeholders::_1, std::placeholders::_2) }, // Backspace keybind
-        { '\r', std::bind(&Editor::newLine, this, std::placeholders::_1, std::placeholders::_2) },
-        { KEY_UP, std::bind(&Editor::keyUp, this, std::placeholders::_1, std::placeholders::_2) },
-        { KEY_DOWN, std::bind(&Editor::keyDown, this, std::placeholders::_1, std::placeholders::_2) },
-        { KEY_LEFT, std::bind(&Editor::keyLeft, this, std::placeholders::_1, std::placeholders::_2) },
-        { KEY_RIGHT, std::bind(&Editor::keyRight, this, std::placeholders::_1, std::placeholders::_2) },
-	{ KEY_F(5), std::bind(&Editor::saveFile, this, std::placeholders::_1, std::placeholders::_2) }, // save file keybind
-        { KEY_F(6), std::bind(&Editor::loadFile, this, std::placeholders::_1, std::placeholders::_2) },
-    };
-
-    for(auto keybind : defaultKeybindings) {
-        keybindings.push_back(keybind);
     }
 }
