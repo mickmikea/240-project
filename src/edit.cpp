@@ -66,17 +66,12 @@ void Editor::printLines()
     for(int i = lineStart; i < lines.size(); i++) {
         std::string line = lines.at(i);
 
-<<<<<<< HEAD
-        writeKeyWordLine(i, line);//checks if it needs to highlight a keyword
-   }
-=======
         waddstr(window, line.c_str());
 
         if(i < lines.size() - 1) {
             waddch(window, '\n');
         }
     }
->>>>>>> upstream/master
 }
 
 void Editor::drawStatusBar()
@@ -312,13 +307,8 @@ void Editor::saveFile(std::string& line, char keyPressed) // save file
 
 void Editor::loadFile(std::string &fileName, char keyPressed) // load file
 {
-<<<<<<< HEAD
     werase(window); //erases window before prompt
-=======
-    y = 0;
-    x = 0;
-    newLine(lines.at(0), 0);
->>>>>>> upstream/master
+
     lines.at(0) = "Enter a load filename: ";
     x = lines.at(0).length();
     int filenameStart = x;
