@@ -347,8 +347,10 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
     lines.clear();
     lines = read_write_file::read_file(filename);
 
+    if(lines.empty()) {
+        lines.push_back("");
+    }
 
-    lines.push_back("");
     x = 0;
     y = 0;
     localY = 0;
