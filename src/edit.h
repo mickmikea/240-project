@@ -64,8 +64,15 @@ private:
     void keyRight(std::string& line, char pressedKey);
     void saveFile(std::string& line, char pressedKey);
     void loadFile(std::string& file, char keyPressed);
+    void exit(std::string& line, char pressedKey);
+
 private:
     WINDOW* window;
+
+    /**
+     * @brief running whether or not the editor is running
+     */
+    bool running;
 
     /**
      * @brief localY the y coordinate in the terminal

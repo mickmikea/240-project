@@ -7,7 +7,7 @@
 #include <cstdio>
 
 Editor::Editor(WINDOW* window)
-    : window{window}, x{0}, y{0}, lineStart{0}, localY{0}, fileName{"Untitled"}
+    : window{window}, x{0}, y{0}, lineStart{0}, localY{0}, fileName{"Untitled"}, running{true}
 {
     keypad(window, true);
 
@@ -26,7 +26,7 @@ void Editor::run()
     init_pair(3, COLOR_RED, COLOR_WHITE);
 
 
-    while(true)
+    while(running)
     {
         int ch = getch(); // Read the next typed character.
         std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
@@ -365,6 +365,11 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
     wrefresh(window);
 }
 
+void Editor::exit(std::string& line, char keyPressed)
+{
+    running = false;
+}
+
 void Editor::setupKeybindings()
 {
     std::vector<Keybind> defaultKeybindings {
@@ -374,8 +379,9 @@ void Editor::setupKeybindings()
         { KEY_DOWN, std::bind(&Editor::keyDown, this, std::placeholders::_1, std::placeholders::_2) },
         { KEY_LEFT, std::bind(&Editor::keyLeft, this, std::placeholders::_1, std::placeholders::_2) },
         { KEY_RIGHT, std::bind(&Editor::keyRight, this, std::placeholders::_1, std::placeholders::_2) },
-	{ KEY_F(5), std::bind(&Editor::saveFile, this, std::placeholders::_1, std::placeholders::_2) }, // save file keybind
+        { KEY_F(5), std::bind(&Editor::saveFile, this, std::placeholders::_1, std::placeholders::_2) }, // save file keybind
         { KEY_F(6), std::bind(&Editor::loadFile, this, std::placeholders::_1, std::placeholders::_2) },
+        { KEY_F(10), std::bind(&Editor::exit, this, std::placeholders::_1, std::placeholders::_2) },
     };
 
     for(auto keybind : defaultKeybindings) {
