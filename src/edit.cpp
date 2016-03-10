@@ -57,8 +57,6 @@ void Editor::run()
     }
 }
 
-
-
 void Editor::printLines()
 {
     werase(window); //clear the screen before moving to the origin, so the junk that should be deleted while backspacing gets deleted
@@ -70,8 +68,7 @@ void Editor::printLines()
     for(int i = lineStart; i < lines.size(); i++) {
         std::string line = lines.at(i);
 
-	writeKeyWordLine(i, line);//checks if it needs to highlight a keyword
-
+        writeKeyWordLine(i, line);//checks if it needs to highlight a keyword
    }
 }
 
@@ -292,9 +289,6 @@ void Editor::saveFile(std::string& line, char keyPressed) // save file
 void Editor::loadFile(std::string &fileName, char keyPressed) // load file
 {
     werase(window); //erases window before prompt
-    y = 0;
-    x = 0;
-    newLine(lines.at(0), 0);
     lines.at(0) = "Enter a load filename: ";
     x = lines.at(0).length();
     int filenameStart = x;
@@ -308,10 +302,9 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
     wmove(window, localY, x);
     wrefresh(window);
 
-    while(true)
-    {
-	int ch = getch(); // Read the next typed character.
-        std::string& line = lines.at(y); // Get the string that holds the information about the line we're on
+    while(running) {
+        int ch = getch(); // Read the next typed character.
+        std::string& line = lines.at(0); // Get the string that holds the information about the line we're on
 
         bool handled = false;
 
@@ -323,10 +316,9 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
         }
 
         if(!handled) {
-	    if(x >= COLS - 1)
-	    {
-		break;
-	    }
+            if(x >= COLS - 1) {
+               break;
+            }
 
             if(x < line.length()) {
                 line.insert(line.begin() + x, ch);
@@ -337,11 +329,11 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
             x++;
         }
 
-	//if we're past the top line, go with what we've got
-	if(y != 0)
-	{
-	    break;
-	}
+        //if we're past the top line, go with what we've got
+        if(y != 0)
+        {
+            break;
+        }
 
         printLines();
         drawStatusBar();
@@ -355,6 +347,9 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
     lines.clear();
     lines = read_write_file::read_file(filename);
 
+
+    lines.push_back("");
+    x = 0;
     y = 0;
     localY = 0;
     lineStart = 0;
@@ -362,6 +357,7 @@ void Editor::loadFile(std::string &fileName, char keyPressed) // load file
     printLines();
     drawStatusBar();
     wmove(window, localY, x);
+    mvprintw(2, 2, "%s", filename.c_str());
     wrefresh(window);
 }
 
